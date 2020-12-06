@@ -17,8 +17,8 @@ class Coordinate {
 class Geofence {
   static const MethodChannel _channel = const MethodChannel('geofence');
 
-  static GeofenceCallback _entryCallback;
-  static GeofenceCallback _exitCallback;
+  static GeofenceCallback _eventCallback;
+  // static GeofenceCallback _exitCallback;
 
   //ignore: close_sinks
   static StreamController<Coordinate> _userLocationUpdated =
@@ -80,20 +80,20 @@ class Geofence {
     var completer = new Completer<void>();
     _broadcastLocationStream = _userLocationUpdated.stream.asBroadcastStream();
     _channel.setMethodCallHandler((call) async {
-      if (call.method == "entry") {
+      if (call.method == "eventUpdated") {
         Geolocation location = Geolocation(
             latitude: call.arguments["latitude"] as double,
             longitude: call.arguments["longitude"] as double,
             radius: call.arguments["radius"] as double,
             id: call.arguments["id"] as String);
-        _entryCallback(location);
-      } else if (call.method == "exit") {
-        Geolocation location = Geolocation(
-            latitude: call.arguments["latitude"] as double,
-            longitude: call.arguments["longitude"] as double,
-            radius: call.arguments["radius"] as double,
-            id: call.arguments["id"] as String);
-        _exitCallback(location);
+        _eventCallback(location);
+        // } else if (call.method == "exit") {
+        //   Geolocation location = Geolocation(
+        //       latitude: call.arguments["latitude"] as double,
+        //       longitude: call.arguments["longitude"] as double,
+        //       radius: call.arguments["radius"] as double,
+        //       id: call.arguments["id"] as String);
+        //   _exitCallback(location);
       } else if (call.method == "userLocationUpdated") {
         Coordinate coordinate =
             Coordinate(call.arguments["lat"], call.arguments["lng"]);
@@ -108,14 +108,16 @@ class Geofence {
   }
 
   /// Set a callback block for a specific geo-event
-  static void startListening(GeolocationEvent event, GeofenceCallback entry) {
-    switch (event) {
-      case GeolocationEvent.entry:
-        _entryCallback = entry;
-        break;
-      case GeolocationEvent.exit:
-        _exitCallback = entry;
-        break;
-    }
+  static void startListening(
+      GeolocationEvent event, GeofenceCallback callback) {
+    // switch (event) {
+    //   case GeolocationEvent.entry:
+    //     _entryCallback = entry;
+    //     break;
+    //   case GeolocationEvent.exit:
+    //     _exitCallback = entry;
+    //     break;
+    // }
+    _eventCallback = callback;
   }
 }
